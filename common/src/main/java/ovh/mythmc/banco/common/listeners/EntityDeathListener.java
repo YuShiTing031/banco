@@ -13,7 +13,12 @@ public class EntityDeathListener implements Listener {
         if (event.getEntityType().equals(EntityType.PLAYER))
             return;
 
-        event.getDrops().removeIf(item -> Banco.get().getEconomyManager().value(item.getType().name()) > 0);
+        event.getDrops().removeIf(item -> {
+            if (item.hasItemMeta() && item.getItemMeta().hasCustomModelData())
+                return Banco.get().getEconomyManager().value(item.getType().name(), item.getItemMeta().getCustomModelData()) > 0;
+
+            return false;
+        });
     }
 
 }

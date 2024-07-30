@@ -4,7 +4,9 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import ovh.mythmc.banco.api.economy.ValuableItem;
 import ovh.mythmc.banco.common.BancoPlaceholderExpansion;
 import ovh.mythmc.banco.common.BancoVaultImpl;
 import ovh.mythmc.banco.common.boot.BancoBootstrap;
@@ -125,9 +127,9 @@ public final class BancoPaper extends BancoBootstrap<BancoPaperPlugin> {
             return;
 
         for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null)
+            if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData())
                 return;
-            if (Banco.get().getEconomyManager().value(item.getType().name()) > 0)
+            if (Banco.get().getEconomyManager().value(item.getType().name(), item.getItemMeta().getCustomModelData()) > 0)
                 player.getInventory().remove(item);
         }
     }
@@ -150,14 +152,22 @@ public final class BancoPaper extends BancoBootstrap<BancoPaperPlugin> {
     public List<ItemStack> convertAmountToItems(double amount) {
         List<ItemStack> items = new ArrayList<>();
 
-        for (String materialName : MapUtil.sortByValue(Banco.get().getEconomyManager().values()).keySet()) {
-            int itemAmount = (int) Math.floor(amount / Banco.get().getEconomyManager().value(materialName));
+        for (String key : MapUtil.sortByValue(Banco.get().getEconomyManager().values()).keySet()) {
+            ValuableItem valuableItem = Banco.get().getEconomyManager().get(key);
+            if (valuableItem == null)
+                continue;
+            int itemAmount = (int) Math.floor(amount / valuableItem.getValue());
 
             if (itemAmount > 0) {
-                items.add(new ItemStack(Objects.requireNonNull(Material.getMaterial(materialName)), itemAmount));
+                ItemStack itemStack = new ItemStack(Objects.requireNonNull(Material.getMaterial(valuableItem.getMaterialName())), itemAmount);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.setCustomModelData(valuableItem.getCustomModelData());
+                itemStack.setItemMeta(itemMeta);
+
+                items.add(itemStack);
             }
 
-            amount = amount - Banco.get().getEconomyManager().value(materialName, itemAmount);
+            amount = amount - valuableItem.getValue() * itemAmount;
         }
 
         return items;

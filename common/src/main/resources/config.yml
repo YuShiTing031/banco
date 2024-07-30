@@ -15,9 +15,14 @@ currency:
   symbol: $
   remove-drops: true # Prevent valuable items from dropping when killing mobs
   format: '#,###.#'
-  value: # https://jd.papermc.io/paper/1.21/org/bukkit/Material.html
-    GOLD_INGOT: 1
-    GOLD_BLOCK: 9
+  items: # https://jd.papermc.io/paper/1.21/org/bukkit/Material.html
+    EMERALD:
+      value: 1
+      custom-model-data: 1 # CustomModelData is supported too!
+    GOLD_INGOT:
+      value: 1
+    GOLD_BLOCK:
+      value: 9
 
 #
 # Auto save settings
