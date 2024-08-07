@@ -1,7 +1,10 @@
 package ovh.mythmc.banco.common.util;
 
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import ovh.mythmc.banco.api.Banco;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,22 @@ public final class MathUtil {
         } catch (final NumberFormatException e) {
             return false;
         }
+    }
+
+    public static BigDecimal value(ItemStack item) {
+        String materialName = item.getType().name();
+        String displayName = null;
+        int customModelData = -1;
+        if (item.hasItemMeta()) {
+            displayName = item.getItemMeta().getDisplayName();
+            if (item.getItemMeta().hasCustomModelData())
+                customModelData = item.getItemMeta().getCustomModelData();
+        }
+
+        if (Banco.get().getEconomyManager().exists(materialName, displayName, customModelData))
+            return Banco.get().getEconomyManager().get(materialName, displayName, customModelData).value().multiply(BigDecimal.valueOf(item.getAmount()));
+
+        return BigDecimal.valueOf(0);
     }
 
 }
