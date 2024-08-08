@@ -1,6 +1,7 @@
 package ovh.mythmc.banco.common.impl;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -34,7 +35,7 @@ public class BancoHelperImpl implements BancoHelper {
         BigDecimal amountGiven = BigDecimal.valueOf(0);
 
         for (ItemStack item : convertAmountToItems(amount)) {
-            amountGiven = amountGiven.add(MathUtil.value(item));
+            amountGiven = amountGiven.add(MathUtil.value(item).multiply(BigDecimal.valueOf(item.getAmount())));
 
             if (!player.getInventory().addItem(item).isEmpty())
                 player.getWorld().dropItemNaturally(player.getLocation(), item);
@@ -92,7 +93,7 @@ public class BancoHelperImpl implements BancoHelper {
     public BigDecimal getInventoryValue(UUID uuid) {
         BigDecimal value = BigDecimal.valueOf(0);
 
-        for (ItemStack item : Objects.requireNonNull(Bukkit.getPlayer(uuid)).getInventory()) {
+        for (ItemStack item : Objects.requireNonNull(Bukkit.getPlayer(uuid)).getInventory().getContents()) {
             if (item != null)
                 value = value.add(MathUtil.value(item));
         }
@@ -111,15 +112,17 @@ public class BancoHelperImpl implements BancoHelper {
         List<ItemStack> items = new ArrayList<>();
 
         for (BancoItem item : Banco.get().getEconomyManager().get()) {
-            int itemAmount = amount.divide(item.value(), RoundingMode.FLOOR).intValue();
+            int itemAmount = (amount.divide(item.value(), RoundingMode.FLOOR)).intValue();
+            Banco.get().getLogger().info(itemAmount + "");
 
             if (itemAmount < 1)
                 continue;
 
             ItemStack itemStack = new ItemStack(Material.getMaterial(item.name()), itemAmount);
             ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.setDisplayName(item.displayName());
-            itemMeta.setLore(item.lore());
+            if (!itemMeta.getDisplayName().equals(""))
+                itemMeta.setDisplayName(ChatColor.RESET + item.displayName());
+            itemMeta.setLore(item.lore().stream().map(string -> ChatColor.RESET + string).toList());
             itemMeta.setCustomModelData(item.customModelData());
             itemStack.setItemMeta(itemMeta);
 

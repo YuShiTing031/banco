@@ -40,7 +40,7 @@ public final class EconomyManager {
             items.add(item);
 
             if (Banco.get().getSettings().get().isDebug())
-                logger.info("{0} ({1}) with CustomModelData {2} -> {3}",
+                logger.info("{} ({}) with CustomModelData {}: {}",
                         item.name(),
                         item.displayName(),
                         item.customModelData(),
@@ -49,7 +49,9 @@ public final class EconomyManager {
         });
     }
 
-    public void add(BancoItem item) { items.add(item); }
+    public void add(BancoItem item) {
+        items.add(item);
+    }
 
     public void remove(BancoItem item) { items.remove(item); }
 

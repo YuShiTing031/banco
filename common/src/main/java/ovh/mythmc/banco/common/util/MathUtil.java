@@ -37,6 +37,8 @@ public final class MathUtil {
                 customModelData = item.getItemMeta().getCustomModelData();
         }
 
+        Banco.get().getLogger().info(item.getItemMeta().getDisplayName());
+
         if (Banco.get().getEconomyManager().exists(materialName, displayName, customModelData))
             return Banco.get().getEconomyManager().get(materialName, displayName, customModelData).value().multiply(BigDecimal.valueOf(item.getAmount()));
 
